@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fitlife/models/membership.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:intl/intl.dart';
 
 class MembershipCard extends StatelessWidget {
   final Membership membership;
@@ -17,6 +18,12 @@ class MembershipCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final price = isYearly ? membership.yearlyPrice : membership.monthlyPrice;
+    final formattedPrice = NumberFormat.currency(
+      locale: 'en_UG',
+      name: 'UGX',
+      symbol: 'UGX ',
+      decimalDigits: 0,
+    ).format(price);
     final isPremium = membership.isPopular;
 
     return Container(
@@ -64,7 +71,7 @@ class MembershipCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '\$${price.toStringAsFixed(2)}',
+                      formattedPrice,
                       style: Theme.of(context).textTheme.displaySmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: isPremium ? Theme.of(context).colorScheme.primary : null,
