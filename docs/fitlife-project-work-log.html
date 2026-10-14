@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FitLife | Project Work Log</title>
+  <style>
+    @page { size: Letter; margin: 0.72in 0.7in 0.76in; }
+    :root { color-scheme: light; --ink: #172b2b; --muted: #526568; --green: #176b59; --mint: #e9f4ef; --line: #d7e2dd; --orange: #a84e27; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); font: 10.5pt/1.5 "Segoe UI", Arial, sans-serif; }
+    header { border-bottom: 3px solid var(--green); padding: 0 0 18px; margin-bottom: 22px; }
+    .eyebrow { color: var(--green); font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: 1.3px; }
+    h1 { margin: 7px 0 5px; font: 31pt/1.08 Georgia, "Times New Roman", serif; }
+    .subtitle { color: var(--muted); font-size: 12pt; }
+    .meta { display: flex; gap: 24px; margin-top: 16px; color: var(--muted); font-size: 9pt; }
+    h2 { margin: 23px 0 8px; color: var(--green); font: 18pt/1.2 Georgia, "Times New Roman", serif; break-after: avoid; }
+    h3 { margin: 15px 0 4px; font-size: 11pt; break-after: avoid; }
+    p { margin: 5px 0 9px; }
+    ul, ol { margin: 5px 0 11px; padding-left: 20px; }
+    li { margin: 3px 0; }
+    code { font: 9pt Consolas, "Courier New", monospace; color: #254942; }
+    .summary { padding: 13px 15px; background: var(--mint); border-left: 4px solid var(--green); margin: 14px 0 18px; }
+    .summary strong { color: var(--green); }
+    .status { display: inline-block; padding: 3px 8px; margin-right: 5px; border: 1px solid var(--line); border-radius: 4px; font-size: 8.5pt; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 9.4pt; }
+    th { text-align: left; background: var(--mint); color: var(--green); }
+    th, td { vertical-align: top; padding: 7px 8px; border: 1px solid var(--line); }
+    .step { break-inside: avoid; padding-left: 12px; border-left: 2px solid var(--line); margin: 13px 0 15px; }
+    .step h3 { margin-top: 0; }
+    .note { color: var(--muted); font-size: 9pt; }
+    .page { break-before: page; }
+    footer { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 7px; color: var(--muted); font-size: 8.5pt; }
+    @media screen { body { max-width: 8.5in; margin: 32px auto; padding: 0.65in; box-shadow: 0 2px 20px #172b2b18; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">FitLife · Project record</div>
+    <h1>Project Work Log</h1>
+    <div class="subtitle">A chronological record of implementation, troubleshooting, verification, and documentation</div>
+    <div class="meta"><span>Project: Flutter fitness-centre app</span><span>Work period: 13 October 2026</span><span>Platform: Windows</span></div>
+  </header>
+
+  <div class="summary">
+    <strong>Outcome</strong><br>
+    The app’s provider syntax was corrected, regression coverage was added, compact-card layout overflows were addressed, and the generated counter test was removed. The last automated checks reported <code>flutter test</code> passing and <code>flutter analyze</code> with no issues. Windows and browser launch attempts exposed local tooling problems along the way; the user subsequently confirmed that the app is now working.
+  </div>
+
+  <p>This report records the meaningful steps taken in the FitLife session, including unsuccessful attempts and the evidence they produced. Commands are shown as run or as the equivalent project-root command when several retries differed only in shell/path syntax.</p>
+
+  <h2>Project at the Start</h2>
+  <p>FitLife was an existing Flutter app scaffold with Material 3 UI, Riverpod state providers, GoRouter navigation, feature screens, reusable cards, and local sample data. The main areas were Home, Programs, Trainers, Membership, and Profile, with separate program and trainer detail routes. No backend service was part of the current prototype.</p>
+  <p>The first status review found the app had substantial UI and routing already present, but it had not yet been verified end-to-end. A suspected syntax problem in the membership provider and uncertain analyzer results became the first concrete checks.</p>
+
+  <h2>Chronology</h2>
+
+  <div class="step">
+    <h3>1. Inspected the app and checked its code</h3>
+    <p>Reviewed the app entry point, provider layer, router, mock data, project dependencies, and feature screens. Ran Flutter analysis and tests to establish a baseline. Early analyzer execution timed out, so the result was treated as inconclusive rather than a pass.</p>
+    <p><strong>Finding:</strong> <code>membershipsProvider</code> returned <code>MockData.memberships</code> without a terminating semicolon. The malformed provider was a concrete compile blocker.</p>
+  </div>
+
+  <div class="step">
+    <h3>2. Fixed the provider and added regression coverage</h3>
+    <p>Added the missing semicolon in <code>lib/providers/app_providers.dart</code>. Created <code>test/app_providers_test.dart</code> to verify that providers expose program, trainer, and membership data and that featured lists remain bounded.</p>
+    <p><strong>Check:</strong> <code>flutter test</code> passed with one test. This established that the provider layer compiled and returned the expected mock data.</p>
+  </div>
+
+  <div class="step">
+    <h3>3. Tried browser launch and diagnosed the local port conflict</h3>
+    <p>Attempted to run the app in Chrome and via Flutter’s web-server target, initially on port 3000. The launch could not establish a usable debug session. A later direct Chrome attempt reported that port 3000 was already bound (Windows socket error 10048); process inspection pointed to a leftover Dart/Flutter debug process. This evidence indicated a local port conflict rather than a firewall rule.</p>
+    <p>Checked available Flutter devices and confirmed Windows, Chrome, and Edge were detected. Retried the web launch on other ports and in Edge. Edge reached “Waiting for connection from debug service” but did not yield a stable verified preview. A Flutter temp-directory cleanup permission/access error was also observed.</p>
+  </div>
+
+  <div class="step">
+    <h3>4. Prepared the Windows desktop target</h3>
+    <p>The first native run reported that the project had no Windows desktop configuration. Enabled Flutter Windows desktop support and generated the Windows runner files with <code>flutter config --enable-windows-desktop</code> and <code>flutter create . --platforms=windows</code>.</p>
+    <p>Windows Developer settings were opened after Flutter indicated symlink/Developer Mode requirements for plugin builds. A later Windows build completed and produced <code>build/windows/x64/runner/Debug/fitlife.exe</code>, confirming the desktop target could compile.</p>
+  </div>
+
+  <div class="step">
+    <h3>5. Used runtime rendering to find card overflows</h3>
+    <p>Running the app far enough to lay out the UI exposed a trainer-card <code>RenderFlex</code> overflow of 28 pixels. Follow-up widget testing surfaced another 12-pixel overflow in the horizontal program card, as well as the trainer card overflow under test constraints.</p>
+    <p>Adjusted <code>lib/widgets/trainer_card.dart</code> to use a fixed card height and more compact avatar, text, and spacing. Adjusted the horizontal layout in <code>lib/widgets/program_card.dart</code> to prevent the card’s constrained column from overflowing. These changes addressed the reported compact-card layout failures.</p>
+  </div>
+
+  <div class="step">
+    <h3>6. Removed the stale generated counter test</h3>
+    <p>The scaffold’s default <code>test/widget_test.dart</code> expected a <code>MyApp</code> counter screen, which does not exist in FitLife. It was changed temporarily to pump the actual <code>FitLifeApp</code>, but the app’s timed entrance animations made <code>pumpAndSettle</code> time out and also exposed the card layout overflows. Rather than keep an unreliable generated test, the stale widget test was removed. The meaningful provider regression test remained.</p>
+  </div>
+
+  <div class="step">
+    <h3>7. Reset Flutter’s local build/debug state</h3>
+    <p>Stopped stale Dart/Flutter processes and processes holding common development ports, removed stale Flutter temp debug folders, then ran <code>flutter clean</code>, <code>flutter pub get</code>, and <code>flutter analyze</code>. The intent was to eliminate stale tooling state and revalidate from a clean dependency/build state.</p>
+  </div>
+
+  <div class="step">
+    <h3>8. Re-ran automated checks and attempted final launch</h3>
+    <p>The project checks were run after the layout and test cleanup:</p>
+    <ul>
+      <li><code>flutter test</code> → <strong>All tests passed</strong> (one provider regression test).</li>
+      <li><code>flutter analyze</code> → <strong>No issues found.</strong></li>
+    </ul>
+    <p>A final <code>flutter run -d windows</code> attempt began building the Windows application but did not, at that point, provide a confirmed visible UI in the session. Web launch attempts had separately encountered the occupied port/debug-service issue. These were recorded as environment/runtime launch friction, not as passing visual verification.</p>
+    <p><strong>Final user confirmation:</strong> after these changes and launch attempts, the user reported: “the app is now working thanks.” This is the final confirmation of working behavior.</p>
+  </div>
+
+  <div class="page"></div>
+  <h2>Documentation Added</h2>
+  <p>After confirming the app was working, the project’s placeholder <code>README.md</code> was replaced with project-specific documentation. It now covers app features, prerequisites, dependency setup, Chrome and Windows run commands, test and analyzer commands, folder layout, remote sample images, and prototype limitations.</p>
+
+  <h2>Current Verification Snapshot</h2>
+  <table>
+    <thead><tr><th>Area</th><th>Recorded result</th></tr></thead>
+    <tbody>
+      <tr><td>Provider compile blocker</td><td>Fixed: membership provider return statement now terminates correctly.</td></tr>
+      <tr><td>Regression test</td><td>Added for mock provider data and featured-list bounds; the retained suite passed.</td></tr>
+      <tr><td>Static analysis</td><td><code>flutter analyze</code> reported no issues in the final code checks.</td></tr>
+      <tr><td>Card layout</td><td>Trainer and horizontal program-card overflow reports were addressed.</td></tr>
+      <tr><td>Windows target</td><td>Desktop files generated and a Windows debug executable built.</td></tr>
+      <tr><td>App running</td><td>User confirmed the app was working after the launch troubleshooting.</td></tr>
+      <tr><td>Backend/persistence</td><td>Not implemented in this prototype. Sample data and app state are local/in-memory.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Useful Commands</h2>
+  <table>
+    <thead><tr><th>Purpose</th><th>Command</th></tr></thead>
+    <tbody>
+      <tr><td>Install dependencies</td><td><code>flutter pub get</code></td></tr>
+      <tr><td>Run tests</td><td><code>flutter test</code></td></tr>
+      <tr><td>Analyze source</td><td><code>flutter analyze</code></td></tr>
+      <tr><td>Run in Chrome</td><td><code>flutter run -d chrome</code></td></tr>
+      <tr><td>Run as Windows desktop</td><td><code>flutter run -d windows</code></td></tr>
+    </tbody>
+  </table>
+
+  <p class="note">This is a session work log, not a claim that every platform, screen size, or external service has been exhaustively tested. Sample images use remote Unsplash URLs and require an internet connection.</p>
+  <footer>FitLife project work log · Prepared 13 October 2026</footer>
+</body>
+</html>
